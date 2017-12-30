@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="KOINEX.Plotter.TradeScatter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:KOINEX.Plotter"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <lvc:CartesianChart AnimationsSpeed="0" >
+        <lvc:CartesianChart.Series>
+            <lvc:ScatterSeries Values="{Binding SellChartValues}"
+                               MinPointShapeDiameter="15"
+                               MaxPointShapeDiameter="45"
+                               PointGeometry="{Binding Icon}"
+                               LabelPoint="{Binding SellLabel}">
+            </lvc:ScatterSeries>
+            <lvc:ScatterSeries Values="{Binding BuyChartValues}"
+                               MinPointShapeDiameter="15"
+                               MaxPointShapeDiameter="45"
+                               PointGeometry="{Binding Icon}"
+                               LabelPoint="{Binding BuyLabel}"
+                               >
+            </lvc:ScatterSeries>
+            <lvc:ScatterSeries Values="{Binding TradeChartValues}"
+                               MinPointShapeDiameter="15"
+                               MaxPointShapeDiameter="45"
+                               PointGeometry="{Binding Icon}"
+                               LabelPoint="{Binding TradeLabel}">
+            </lvc:ScatterSeries>
+        </lvc:CartesianChart.Series>
+        <lvc:CartesianChart.AxisX>
+            <lvc:Axis MaxValue="{Binding AxisMaxX}"
+                      MinValue="{Binding AxisMinX}"></lvc:Axis>
+        </lvc:CartesianChart.AxisX>
+        <lvc:CartesianChart.AxisY>
+            <lvc:Axis MaxValue="{Binding AxisMaxY}"
+                      MinValue="{Binding AxisMinY}"></lvc:Axis>
+        </lvc:CartesianChart.AxisY>
+    </lvc:CartesianChart>
+</UserControl>
