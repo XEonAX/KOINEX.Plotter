@@ -1,42 +1,84 @@
 ﻿<UserControl x:Class="KOINEX.Plotter.TradeScatter"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:KOINEX.Plotter"
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             xml:lang="en-IN"
+             mc:Ignorable="d"
+             d:DesignHeight="400"
+             d:DesignWidth="600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
 
-    <lvc:CartesianChart AnimationsSpeed="0" >
-        <lvc:CartesianChart.Series>
-            <lvc:ScatterSeries Values="{Binding SellChartValues}"
-                               MinPointShapeDiameter="15"
-                               MaxPointShapeDiameter="45"
-                               PointGeometry="{Binding Icon}"
-                               LabelPoint="{Binding SellLabel}">
-            </lvc:ScatterSeries>
-            <lvc:ScatterSeries Values="{Binding BuyChartValues}"
-                               MinPointShapeDiameter="15"
-                               MaxPointShapeDiameter="45"
-                               PointGeometry="{Binding Icon}"
-                               LabelPoint="{Binding BuyLabel}"
-                               >
-            </lvc:ScatterSeries>
-            <lvc:ScatterSeries Values="{Binding TradeChartValues}"
-                               MinPointShapeDiameter="15"
-                               MaxPointShapeDiameter="45"
-                               PointGeometry="{Binding Icon}"
-                               LabelPoint="{Binding TradeLabel}">
-            </lvc:ScatterSeries>
-        </lvc:CartesianChart.Series>
-        <lvc:CartesianChart.AxisX>
-            <lvc:Axis MaxValue="{Binding AxisMaxX}"
-                      MinValue="{Binding AxisMinX}"></lvc:Axis>
-        </lvc:CartesianChart.AxisX>
-        <lvc:CartesianChart.AxisY>
-            <lvc:Axis MaxValue="{Binding AxisMaxY}"
-                      MinValue="{Binding AxisMinY}"></lvc:Axis>
-        </lvc:CartesianChart.AxisY>
-    </lvc:CartesianChart>
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding Connect}">Connect</Button>
+                <Button Command="{Binding Disconnect}">Disconnect</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        DataContext="{Binding MarketData}">
+                <Label Content="Last Traded Price:" />
+                <TextBlock Text="{Binding Last_Traded_Price, StringFormat={}{0:C}}"
+                           VerticalAlignment="Center" />
+                <Label Content=" Lowest Ask:" />
+                <TextBlock Text="{Binding Lowest_Ask, StringFormat={}{0:C}}"
+                           VerticalAlignment="Center" />
+                <Label Content=" Highest Bid:" />
+                <TextBlock Text="{Binding Highest_Bid, StringFormat={}{0:C}}"
+                           VerticalAlignment="Center" />
+                <Label Content=" Min:" />
+                <TextBlock Text="{Binding Min, StringFormat={}{0:C}}"
+                           VerticalAlignment="Center" />
+                <Label Content=" Max:" />
+                <TextBlock Text="{Binding Max, StringFormat={}{0:C}}"
+                           VerticalAlignment="Center" />
+                <Label Content=" Vol:" />
+                <TextBlock Text="{Binding Vol}"
+                           VerticalAlignment="Center" />
+                <Label Content=" Less:" />
+                <TextBox Text="{Binding AlertLess}"
+                           VerticalAlignment="Center" />
+                <Label Content=" More:" />
+                <TextBox Text="{Binding AlertMore}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+        <lvc:CartesianChart AnimationsSpeed="0"
+                            Grid.Row="1">
+            <lvc:CartesianChart.Series>
+                <lvc:ScatterSeries Values="{Binding SellChartValues}"
+                                   MinPointShapeDiameter="15"
+                                   MaxPointShapeDiameter="45"
+                                   PointGeometry="{Binding Icon}"
+                                   LabelPoint="{Binding SellLabel}">
+                </lvc:ScatterSeries>
+                <lvc:ScatterSeries Values="{Binding BuyChartValues}"
+                                   MinPointShapeDiameter="15"
+                                   MaxPointShapeDiameter="45"
+                                   PointGeometry="{Binding Icon}"
+                                   LabelPoint="{Binding BuyLabel}">
+                </lvc:ScatterSeries>
+                <lvc:ScatterSeries Values="{Binding TradeChartValues}"
+                                   MinPointShapeDiameter="15"
+                                   MaxPointShapeDiameter="45"
+                                   PointGeometry="{Binding Icon}"
+                                   LabelPoint="{Binding TradeLabel}">
+                </lvc:ScatterSeries>
+            </lvc:CartesianChart.Series>
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis MaxValue="{Binding AxisMaxX}"
+                          MinValue="{Binding AxisMinX}"></lvc:Axis>
+            </lvc:CartesianChart.AxisX>
+            <lvc:CartesianChart.AxisY>
+                <lvc:Axis MaxValue="{Binding AxisMaxY}"
+                          MinValue="{Binding AxisMinY}"></lvc:Axis>
+            </lvc:CartesianChart.AxisY>
+        </lvc:CartesianChart>
+    </Grid>
 </UserControl>

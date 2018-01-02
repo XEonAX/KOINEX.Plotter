@@ -50,20 +50,30 @@ namespace KOINEX.Plotter
 
             Bitcoin = new Currency(pusherClient);
             Bitcoin.Initialize(Currencies.Types.Bitcoin);
+            Bitcoin.Alert += Alert;
 
             Ether = new Currency(pusherClient);
             Ether.Initialize(Currencies.Types.Ether);
+            Ether.Alert += Alert;
 
             Ripple = new Currency(pusherClient);
             Ripple.Initialize(Currencies.Types.Ripple);
+            Ripple.Alert += Alert;
 
             Litecoin = new Currency(pusherClient);
             Litecoin.Initialize(Currencies.Types.Litecoin);
+            Litecoin.Alert += Alert;
 
             Bitcoin_Cash = new Currency(pusherClient);
             Bitcoin_Cash.Initialize(Currencies.Types.Bitcoin_Cash);
+            Bitcoin_Cash.Alert += Alert;
 
             pusherClient.Connect();
+        }
+
+        private void Alert(object sender, MessageEventArgs e)
+        {
+            myNotifyIcon.ShowBalloonTip("KOINEX Alerts!!", e.Message, Hardcodet.Wpf.TaskbarNotification.BalloonIcon.Warning);
         }
 
         private void btnReset_Click(object sender, RoutedEventArgs e)

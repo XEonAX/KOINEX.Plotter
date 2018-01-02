@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KOINEX.Plotter"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
         Icon="koinex_logo_new_5ea_2.ico"
         Title="KOINEX Plotter"
@@ -32,6 +33,12 @@
                 Content="Reset"
                 Click="btnReset_Click"
                 Grid.Column="1" />
+
+        <tb:TaskbarIcon x:Name="myNotifyIcon"
+                        Visibility="Visible"
+                        ToolTipText="KOINEX Alerts"
+                        IconSource="koinex_logo_new_5ea_2.ico" />
+        
         <GridSplitter Grid.Row="2"
                       Grid.ColumnSpan="4"
                       ResizeDirection="Rows"

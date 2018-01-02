@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace KOINEX.Plotter
             SellChartValues = new ChartValues<ScatterPoint>();
             BuyChartValues = new ChartValues<ScatterPoint>();
             TradeChartValues = new ChartValues<ScatterPoint>();
-
+            MarketData = new MarketData();
             ResetAxes = new SimpleCommand()
             {
                 ExecuteDelegate = x =>
@@ -45,12 +46,19 @@ namespace KOINEX.Plotter
             Connect = new SimpleCommand()
             {
                 ExecuteDelegate = x => _Connect(),
+                CanExecuteDelegate = x => !IsConnected,
+            };
+
+            Disconnect = new SimpleCommand()
+            {
+                ExecuteDelegate = x => _Disconnect(),
+                CanExecuteDelegate = x => IsConnected,
             };
 
 
             SellLabel = (ChartPoint x) =>
               {
-                  return CurrencyName + " Sell " + x.X + " @ " + String.Format("{0:C}", x.Y) + " -" + x.Weight + " = " + String.Format("{0:C}", x.X * x.Y) ;
+                  return CurrencyName + " Sell " + x.X + " @ " + String.Format("{0:C}", x.Y) + " -" + x.Weight + " = " + String.Format("{0:C}", x.X * x.Y);
               };
             BuyLabel = (ChartPoint x) =>
             {
@@ -58,8 +66,19 @@ namespace KOINEX.Plotter
             };
             TradeLabel = (ChartPoint x) =>
             {
-                return CurrencyName + " Trade " + x.X + " @ " + String.Format("{0:C}",x.Y) + " = " + String.Format("{0:C}", x.X * x.Y);
+                return CurrencyName + " Trade " + x.X + " @ " + String.Format("{0:C}", x.Y) + " = " + String.Format("{0:C}", x.X * x.Y);
             };
+        }
+
+        private void _Disconnect()
+        {
+            _pusherChannel.UnbindAll();
+            _pusherChannel.Unsubscribe();
+            //_open_buy_orderswriter.Close();
+            //_open_sell_orderswriter.Close();
+            //_order_transactionswriter.Close();
+            //_market_datawriter.Close();
+            IsConnected = false;
         }
 
         private string _CurrencyName;
@@ -87,11 +106,16 @@ namespace KOINEX.Plotter
 
         private void _Connect()
         {
+            if (IsConnected)
+            {
+                return;
+            }
             SellChartValues.Clear();
             BuyChartValues.Clear();
             TradeChartValues.Clear();
 
-            var p = _pusherClient.Subscribe("my-channel-" + CurrencyName);
+            _pusherChannel = _pusherClient.Subscribe("my-channel-" + CurrencyName);
+            _pusherChannel.Subscribed += _pusherChannel_Subscribed;
             //var tickerwriter = File.AppendText(CurrencyName + "ticker.log");
             //{
             //    M.Bind("ticker", (dynamic data) =>
@@ -100,9 +124,9 @@ namespace KOINEX.Plotter
             //        tickerwriter.WriteLine("[" + DateTime.Now + "] " + msg);
             //    });
             //}
-            var _open_buy_orderswriter = File.AppendText(CurrencyName + "_open_buy_orders.log");
+            //_open_buy_orderswriter = File.AppendText(CurrencyName + "_open_buy_orders.log");
             {
-                p.Bind(CurrencyName + "_open_buy_orders", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName + "_open_buy_orders", (dynamic data) =>
                 {
 
                     string msg = data.message.data.ToString(Formatting.None);
@@ -113,12 +137,12 @@ namespace KOINEX.Plotter
                         UpdateOrderWeight(order, BuyChartValues);
                     }
                     CleanUp(BuyChartValues, data.message.data);
-                    _open_buy_orderswriter.WriteLine("[" + DateTime.Now + "] " + msg);
+                    //_open_buy_orderswriter.WriteLine("[" + DateTime.Now + "] " + msg);
                 });
             }
-            var _open_sell_orderswriter = File.AppendText(CurrencyName + "_open_sell_orders.log");
+            //_open_sell_orderswriter = File.AppendText(CurrencyName + "_open_sell_orders.log");
             {
-                p.Bind(CurrencyName + "_open_sell_orders", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName + "_open_sell_orders", (dynamic data) =>
                 {
 
                     string msg = data.message.data.ToString(Formatting.None);
@@ -129,12 +153,12 @@ namespace KOINEX.Plotter
                         //SellChartValues.Add(new ScatterPoint((double)order.total_quantity, (double)order.price_per_unit, (double)order.remaining_quantity));
                     }
                     CleanUp(SellChartValues, data.message.data);
-                    _open_sell_orderswriter.WriteLine("[" + DateTime.Now + "] " + msg);
+                    //_open_sell_orderswriter.WriteLine("[" + DateTime.Now + "] " + msg);
                 });
             }
-            var _order_transactionswriter = File.AppendText(CurrencyName + "_order_transactions.log");
+            //_order_transactionswriter = File.AppendText(CurrencyName + "_order_transactions.log");
             {
-                p.Bind(CurrencyName + "_order_transactions", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName + "_order_transactions", (dynamic data) =>
                 {
 
                     string msg = data.message.ToString(Formatting.None);
@@ -159,12 +183,61 @@ namespace KOINEX.Plotter
                         //TradeChartValues.Add(new ScatterPoint((double)order.quantity, (double)order.price_per_unit));
                     }
                     CleanUpTrade(TradeChartValues, data.message.order_transactions);
-                    _order_transactionswriter.WriteLine("[" + DateTime.Now + "] " + msg);
+                    //_order_transactionswriter.WriteLine("[" + DateTime.Now + "] " + msg);
                 });
             }
+
+
+            //_market_datawriter = File.AppendText(CurrencyName + "_market_data.log");
+            {
+                _pusherChannel.Bind(CurrencyName + "_market_data", (dynamic data) =>
+                {
+                    string msg = data.message.data.ToString(Formatting.None);
+                    var marketdata = data.message.data;
+                    MarketData.Highest_Bid = marketdata.highest_bid;
+                    MarketData.Last_Traded_Price = marketdata.last_traded_price;
+                    MarketData.Lowest_Ask = marketdata.lowest_ask;
+                    MarketData.Max = marketdata.max;
+                    MarketData.Min = marketdata.min;
+                    MarketData.Vol = marketdata.vol;
+
+                    if (MarketData.AlertMore == 0)
+                    {
+                        MarketData.AlertMore = marketdata.last_traded_price * (1.000 + Variation);
+                    }
+                    if (MarketData.AlertLess == 0)
+                    {
+                        MarketData.AlertLess = marketdata.last_traded_price * (1.000 - Variation);
+                    }
+
+                    if (MarketData.AlertMore < (double)marketdata.last_traded_price)
+                    {
+                        OnAlert(new MessageEventArgs(CurrencyName + " gone up " + string.Format("{0:C}", marketdata.last_traded_price) + " over " + string.Format("{0:C}", MarketData.AlertMore)));
+                        MarketData.AlertMore = marketdata.last_traded_price * (1.000+Variation);
+                        SystemSounds.Hand.Play();
+                    }
+
+                    if (MarketData.AlertLess > (double)marketdata.last_traded_price)
+                    {
+                        OnAlert(new MessageEventArgs(CurrencyName + " gone down " + string.Format("{0:C}", marketdata.last_traded_price) + " below " + string.Format("{0:C}", MarketData.AlertLess)));
+                        MarketData.AlertLess = marketdata.last_traded_price * (1.000-Variation);
+                        SystemSounds.Exclamation.Play();
+                    }
+                    //_market_datawriter.WriteLine("[" + DateTime.Now + "] " + msg);
+                });
+            }
+
+
+
             //m.Bind("fc3711cd-4b9e-409c-bf5a-5ecccbe45810" + "_" + CurrencyName + "_open_orders", (dynamic data) => {
             //    string msg = data.message.ToString(Formatting.None);
             //});
+
+        }
+
+        private void _pusherChannel_Subscribed(object sender)
+        {
+            IsConnected = true;
         }
 
         private void ClearTrades()
@@ -304,9 +377,144 @@ namespace KOINEX.Plotter
             }
         }
 
-        public SimpleCommand Connect { get; private set; }
+        public SimpleCommand Connect { get; set; }
+        public MarketData MarketData { get; set; }
+
+
+        bool _IsConnected;
+        private Channel _pusherChannel;
+        private double Variation=0.0001;
+
+        //private StreamWriter _open_buy_orderswriter;
+        //private StreamWriter _open_sell_orderswriter;
+        //private StreamWriter _order_transactionswriter;
+        //private StreamWriter _market_datawriter;
+
+        public bool IsConnected
+        {
+            get { return _IsConnected; }
+            set
+            {
+                _IsConnected = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public SimpleCommand Disconnect { get; set; }
+
+
+        public event EventHandler<MessageEventArgs> Alert;
+        protected virtual void OnAlert(MessageEventArgs e)
+        {
+            Alert?.Invoke(this, e);
+        }
+
+
     }
 
+    public class MessageEventArgs : EventArgs
+    {
+        public string Message { get; set; }
+        public MessageEventArgs(string msg)
+        {
+            Message = msg;
+        }
+    }
+
+    public class MarketData : NotifyBase
+    {
+        private double _Max;
+        public double Max
+        {
+            get { return _Max; }
+            set
+            {
+                _Max = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+
+        private double _Min;
+        public double Min
+        {
+            get { return _Min; }
+            set
+            {
+                _Min = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private double _Vol;
+        public double Vol
+        {
+            get { return _Vol; }
+            set
+            {
+                _Vol = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private double _Last_Traded_Price;
+        public double Last_Traded_Price
+        {
+            get { return _Last_Traded_Price; }
+            set
+            {
+                _Last_Traded_Price = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private double _Lowest_Ask;
+        public double Lowest_Ask
+        {
+            get { return _Lowest_Ask; }
+            set
+            {
+                _Lowest_Ask = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private double _Highest_Bid;
+        public double Highest_Bid
+        {
+            get { return _Highest_Bid; }
+            set
+            {
+                _Highest_Bid = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private double _AlertLess;
+        public double AlertLess
+        {
+            get { return _AlertLess; }
+            set
+            {
+                _AlertLess = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private double _AlertMore;
+        public double AlertMore
+        {
+            get { return _AlertMore; }
+            set
+            {
+                _AlertMore = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+
+
+    }
 
     static class Currencies
     {
