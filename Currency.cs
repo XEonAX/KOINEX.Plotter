@@ -87,7 +87,9 @@ namespace KOINEX.Plotter
         {
             CurrencyName = name.ToString().ToLower();
             Icon = Currencies.Icons[name];
-            _Connect();
+            
+            
+            //_Connect();
         }
 
         public string CurrencyName
@@ -203,24 +205,28 @@ namespace KOINEX.Plotter
 
                     if (MarketData.AlertMore == 0)
                     {
-                        MarketData.AlertMore = marketdata.last_traded_price * (1.000 + Variation);
+                        MarketData.AlertMore = marketdata.last_traded_price * (1.000 + MarketData.Variation);
                     }
                     if (MarketData.AlertLess == 0)
                     {
-                        MarketData.AlertLess = marketdata.last_traded_price * (1.000 - Variation);
+                        MarketData.AlertLess = marketdata.last_traded_price * (1.000 - MarketData.Variation);
                     }
 
                     if (MarketData.AlertMore < (double)marketdata.last_traded_price)
                     {
                         OnAlert(new MessageEventArgs(CurrencyName + " gone up " + string.Format("{0:C}", marketdata.last_traded_price) + " over " + string.Format("{0:C}", MarketData.AlertMore)));
-                        MarketData.AlertMore = marketdata.last_traded_price * (1.000+Variation);
-                        SystemSounds.Hand.Play();
+                        MarketData.AlertMore = marketdata.last_traded_price * (1.000 + MarketData.Variation);
+                        MarketData.AlertLess = marketdata.last_traded_price * (1.000 - MarketData.Variation);
+                        UpAlert.Play();
+                        //SystemSounds.Hand.Play();
                     }
 
                     if (MarketData.AlertLess > (double)marketdata.last_traded_price)
                     {
                         OnAlert(new MessageEventArgs(CurrencyName + " gone down " + string.Format("{0:C}", marketdata.last_traded_price) + " below " + string.Format("{0:C}", MarketData.AlertLess)));
-                        MarketData.AlertLess = marketdata.last_traded_price * (1.000-Variation);
+                        MarketData.AlertMore = marketdata.last_traded_price * (1.000 + MarketData.Variation);
+                        MarketData.AlertLess = marketdata.last_traded_price * (1.000 - MarketData.Variation);
+                        DownAlert.Play();
                         SystemSounds.Exclamation.Play();
                     }
                     //_market_datawriter.WriteLine("[" + DateTime.Now + "] " + msg);
@@ -383,7 +389,8 @@ namespace KOINEX.Plotter
 
         bool _IsConnected;
         private Channel _pusherChannel;
-        private double Variation=0.0001;
+        private SoundPlayer UpAlert = new SoundPlayer("up.wav");
+        private SoundPlayer DownAlert = new SoundPlayer("down.wav");
 
         //private StreamWriter _open_buy_orderswriter;
         //private StreamWriter _open_sell_orderswriter;
@@ -513,6 +520,7 @@ namespace KOINEX.Plotter
         }
 
 
+        public double Variation { get; set; } = 0.0001;
 
     }
 

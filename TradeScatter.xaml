@@ -43,10 +43,13 @@
                            VerticalAlignment="Center" />
                 <Label Content=" Less:" />
                 <TextBox Text="{Binding AlertLess}"
-                           VerticalAlignment="Center" />
+                         VerticalAlignment="Center" />
                 <Label Content=" More:" />
                 <TextBox Text="{Binding AlertMore}"
-                           VerticalAlignment="Center" />
+                         VerticalAlignment="Center" />
+                <Label Content=" Var:" />
+                <TextBox Text="{Binding Variation}"
+                         VerticalAlignment="Center" />
             </StackPanel>
         </StackPanel>
         <lvc:CartesianChart AnimationsSpeed="0"
