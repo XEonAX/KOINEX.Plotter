@@ -22,7 +22,7 @@ using Newtonsoft.Json;
 using LiveCharts.Defaults;
 using System.Timers;
 using System.Diagnostics;
-
+using AEonAX.Shared;
 namespace KOINEX.Plotter
 {
     /// <summary>
@@ -51,24 +51,38 @@ namespace KOINEX.Plotter
             Bitcoin = new Currency(pusherClient);
             Bitcoin.Initialize(Currencies.Types.Bitcoin);
             Bitcoin.Alert += Alert;
+            Bitcoin.Outlier += Outlier;
 
             Ether = new Currency(pusherClient);
             Ether.Initialize(Currencies.Types.Ether);
             Ether.Alert += Alert;
+            Ether.Outlier += Outlier;
 
             Ripple = new Currency(pusherClient);
             Ripple.Initialize(Currencies.Types.Ripple);
             Ripple.Alert += Alert;
+            Ripple.Outlier += Outlier;
 
             Litecoin = new Currency(pusherClient);
             Litecoin.Initialize(Currencies.Types.Litecoin);
             Litecoin.Alert += Alert;
+            Litecoin.Outlier += Outlier;
 
             Bitcoin_Cash = new Currency(pusherClient);
             Bitcoin_Cash.Initialize(Currencies.Types.Bitcoin_Cash);
             Bitcoin_Cash.Alert += Alert;
+            Bitcoin_Cash.Outlier += Outlier;
 
             pusherClient.Connect();
+        }
+
+        private void Outlier(object sender, MessageEventArgs e)
+        {
+            txtOutlierLog.WPFUIize(() => 
+            {
+                txtOutlierLog.Text += e.Message + Environment.NewLine;
+                txtOutlierLog.ScrollToEnd();
+            });
         }
 
         private void Alert(object sender, MessageEventArgs e)

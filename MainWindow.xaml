@@ -28,6 +28,8 @@
             <ColumnDefinition />
             <ColumnDefinition />
             <ColumnDefinition />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Button x:Name="btnReset"
                 Content="Reset"
@@ -38,7 +40,7 @@
                         Visibility="Visible"
                         ToolTipText="KOINEX Alerts"
                         IconSource="koinex_logo_new_5ea_2.ico" />
-        
+
         <GridSplitter Grid.Row="2"
                       Grid.ColumnSpan="4"
                       ResizeDirection="Rows"
@@ -76,7 +78,25 @@
                             Grid.ColumnSpan="3"
                             DataContext="{Binding Litecoin}"></local:TradeScatter>
         <local:TradeScatter Grid.Row="9"
-                            Grid.ColumnSpan="5"
+                            Grid.ColumnSpan="3"
                             DataContext="{Binding Bitcoin_Cash}"></local:TradeScatter>
+
+
+
+
+
+        <GridSplitter Grid.Column="3"
+                      Grid.Row="1"
+                      Grid.RowSpan="9"
+                      ResizeDirection="Columns"
+                      ResizeBehavior="PreviousAndNext"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch" />
+        <TextBox Name="txtOutlierLog"
+                 Grid.Column="4"
+                 Grid.Row="1"
+                 Grid.RowSpan="9"
+                 TextWrapping="Wrap"
+                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto"></TextBox>
     </Grid>
 </Window>

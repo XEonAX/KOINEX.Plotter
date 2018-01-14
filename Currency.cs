@@ -58,15 +58,15 @@ namespace KOINEX.Plotter
 
             SellLabel = (ChartPoint x) =>
               {
-                  return CurrencyName + " Sell " + x.X + " @ " + String.Format("{0:C}", x.Y) + " -" + x.Weight + " = " + String.Format("{0:C}", x.X * x.Y);
+                  return CurrencyName + " Sell " + x.X + " @ " + string.Format("{0:C}", x.Y) + " -" + x.Weight + " = " + string.Format("{0:C}", x.X * x.Y);
               };
             BuyLabel = (ChartPoint x) =>
             {
-                return CurrencyName + " Buy " + x.X + " @ " + String.Format("{0:C}", x.Y) + " -" + x.Weight + " = " + String.Format("{0:C}", x.X * x.Y);
+                return CurrencyName + " Buy " + x.X + " @ " + string.Format("{0:C}", x.Y) + " -" + x.Weight + " = " + string.Format("{0:C}", x.X * x.Y);
             };
             TradeLabel = (ChartPoint x) =>
             {
-                return CurrencyName + " Trade " + x.X + " @ " + String.Format("{0:C}", x.Y) + " = " + String.Format("{0:C}", x.X * x.Y);
+                return CurrencyName + " Trade " + x.X + " @ " + string.Format("{0:C}", x.Y) + " = " + string.Format("{0:C}", x.X * x.Y);
             };
         }
 
@@ -85,10 +85,10 @@ namespace KOINEX.Plotter
 
         internal void Initialize(Currencies.Types name = Currencies.Types.Ether)
         {
-            CurrencyName = name.ToString().ToLower();
+            CurrencyName = name.ToString();
             Icon = Currencies.Icons[name];
-            
-            
+
+
             //_Connect();
         }
 
@@ -116,51 +116,79 @@ namespace KOINEX.Plotter
             BuyChartValues.Clear();
             TradeChartValues.Clear();
 
-            _pusherChannel = _pusherClient.Subscribe("my-channel-" + CurrencyName);
+            _pusherChannel = _pusherClient.Subscribe("my-channel-" + CurrencyName.ToLower());
             _pusherChannel.Subscribed += _pusherChannel_Subscribed;
-            //var tickerwriter = File.AppendText(CurrencyName + "ticker.log");
-            //{
-            //    M.Bind("ticker", (dynamic data) =>
-            //    {
-            //        string msg = data.message.data.ToString(Formatting.None);
-            //        tickerwriter.WriteLine("[" + DateTime.Now + "] " + msg);
-            //    });
-            //}
-            //_open_buy_orderswriter = File.AppendText(CurrencyName + "_open_buy_orders.log");
             {
-                _pusherChannel.Bind(CurrencyName + "_open_buy_orders", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName.ToLower() + "_open_buy_orders", (dynamic data) =>
                 {
 
                     string msg = data.message.data.ToString(Formatting.None);
                     ClearTrades();
                     //BuyChartValues.Clear();
+                    double highest_bid = double.MinValue;
                     foreach (dynamic order in data.message.data)
                     {
                         UpdateOrderWeight(order, BuyChartValues);
+                        if (((double)order.price_per_unit) > MarketData.Lowest_Ask)
+                        {
+                            OnOutlier(new MessageEventArgs(CurrencyName
+                                + ": Rich Buyer @ "
+                                + string.Format("{0:C}", (double)order.price_per_unit)
+                                + @"/"
+                                + string.Format("{0:C}", MarketData.Lowest_Ask)
+                                + " for "
+                                + (double)order.total_quantity
+                                + " for Total "
+                                + string.Format("{0:C}", (double)order.price_per_unit * (double)order.total_quantity)));
+                            //MarketData.Highest_Bid = (double)order.price_per_unit;
+                        }
+                        if (((double)order.price_per_unit)> highest_bid)
+                        {
+                            highest_bid = (double)order.price_per_unit;
+                        }
                     }
+                    MarketData.Highest_Bid = highest_bid;
                     CleanUp(BuyChartValues, data.message.data);
                     //_open_buy_orderswriter.WriteLine("[" + DateTime.Now + "] " + msg);
                 });
             }
             //_open_sell_orderswriter = File.AppendText(CurrencyName + "_open_sell_orders.log");
             {
-                _pusherChannel.Bind(CurrencyName + "_open_sell_orders", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName.ToLower() + "_open_sell_orders", (dynamic data) =>
                 {
 
                     string msg = data.message.data.ToString(Formatting.None);
                     ClearTrades();
+                    double lowest_ask = double.MaxValue;
                     foreach (dynamic order in data.message.data)
                     {
                         UpdateOrderWeight(order, SellChartValues);
-                        //SellChartValues.Add(new ScatterPoint((double)order.total_quantity, (double)order.price_per_unit, (double)order.remaining_quantity));
+                        if (((double)order.price_per_unit) < MarketData.Highest_Bid)
+                        {
+                            OnOutlier(new MessageEventArgs(CurrencyName
+                                + ": Fool Seller @ "
+                                + string.Format("{0:C}", (double)order.price_per_unit)
+                                + @"/"
+                                + string.Format("{0:C}", MarketData.Highest_Bid)
+                                + " for "
+                                + (double)order.total_quantity
+                                + " for Total "
+                                + string.Format("{0:C}", (double)order.price_per_unit * (double)order.total_quantity)));
+                            //MarketData.Lowest_Ask = (double)order.price_per_unit;
+                        }
+                        if (((double)order.price_per_unit) < lowest_ask)
+                        {
+                            lowest_ask = (double)order.price_per_unit;
+                        }
                     }
+                    MarketData.Lowest_Ask = lowest_ask;
                     CleanUp(SellChartValues, data.message.data);
                     //_open_sell_orderswriter.WriteLine("[" + DateTime.Now + "] " + msg);
                 });
             }
             //_order_transactionswriter = File.AppendText(CurrencyName + "_order_transactions.log");
             {
-                _pusherChannel.Bind(CurrencyName + "_order_transactions", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName.ToLower() + "_order_transactions", (dynamic data) =>
                 {
 
                     string msg = data.message.ToString(Formatting.None);
@@ -192,13 +220,13 @@ namespace KOINEX.Plotter
 
             //_market_datawriter = File.AppendText(CurrencyName + "_market_data.log");
             {
-                _pusherChannel.Bind(CurrencyName + "_market_data", (dynamic data) =>
+                _pusherChannel.Bind(CurrencyName.ToLower() + "_market_data", (dynamic data) =>
                 {
                     string msg = data.message.data.ToString(Formatting.None);
                     var marketdata = data.message.data;
-                    MarketData.Highest_Bid = marketdata.highest_bid;
+                    //MarketData.Highest_Bid = marketdata.highest_bid;
                     MarketData.Last_Traded_Price = marketdata.last_traded_price;
-                    MarketData.Lowest_Ask = marketdata.lowest_ask;
+                    //MarketData.Lowest_Ask = marketdata.lowest_ask;
                     MarketData.Max = marketdata.max;
                     MarketData.Min = marketdata.min;
                     MarketData.Vol = marketdata.vol;
@@ -308,16 +336,19 @@ namespace KOINEX.Plotter
                 if ((double)order.price_per_unit > AxisMaxY || AxisMaxY == 1)
                 {
                     AxisMaxY = (double)order.price_per_unit;
+                    //OnOutlier(new MessageEventArgs(CurrencyName + ": Max Price " + string.Format("{0:C}", (double)order.price_per_unit) + " for " + (double)order.total_quantity + " for Total " + string.Format("{0:C}", (double)order.price_per_unit * (double)order.total_quantity)));
                 }
                 else if ((double)order.price_per_unit < AxisMinY || AxisMinY == 0)
                 {
                     AxisMinY = (double)order.price_per_unit;
+                    //OnOutlier(new MessageEventArgs(CurrencyName + ": Min Price " + string.Format("{0:C}", (double)order.price_per_unit) + " for " + (double)order.total_quantity + " for Total " + string.Format("{0:C}", (double)order.price_per_unit * (double)order.total_quantity)));
                 }
 
 
                 if ((double)order.total_quantity > AxisMaxX || AxisMaxX == 1)
                 {
                     AxisMaxX = (double)order.total_quantity;
+                    //OnOutlier(new MessageEventArgs(CurrencyName + ": Max Quantity " + (double)order.total_quantity + " @ " + string.Format("{0:C}", (double)order.price_per_unit) + " for Total " + string.Format("{0:C}", (double)order.price_per_unit * (double)order.total_quantity)));
                 }
                 else if ((double)order.total_quantity < AxisMinX || AxisMinX == 0)
                 {
@@ -417,6 +448,14 @@ namespace KOINEX.Plotter
         }
 
 
+
+        public event EventHandler<MessageEventArgs> Outlier;
+        protected virtual void OnOutlier(MessageEventArgs e)
+        {
+            Outlier?.Invoke(this, e);
+        }
+
+
     }
 
     public class MessageEventArgs : EventArgs
@@ -475,7 +514,7 @@ namespace KOINEX.Plotter
             }
         }
 
-        private double _Lowest_Ask;
+        private double _Lowest_Ask = double.MaxValue;
         public double Lowest_Ask
         {
             get { return _Lowest_Ask; }
@@ -486,7 +525,7 @@ namespace KOINEX.Plotter
             }
         }
 
-        private double _Highest_Bid;
+        private double _Highest_Bid= double.MinValue;
         public double Highest_Bid
         {
             get { return _Highest_Bid; }
@@ -495,7 +534,7 @@ namespace KOINEX.Plotter
                 _Highest_Bid = value;
                 NotifyPropertyChanged();
             }
-        }
+        } 
 
         private double _AlertLess;
         public double AlertLess

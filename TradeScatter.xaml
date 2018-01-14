@@ -10,78 +10,81 @@
              d:DesignHeight="400"
              d:DesignWidth="600">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="25" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+        <DockPanel>
+            <StackPanel  DockPanel.Dock="Top" Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding Connect}">Connect</Button>
+                    <Button Command="{Binding Disconnect}">Disconnect</Button>
+                </StackPanel>
+                <StackPanel DataContext="{Binding MarketData}"
+                            Orientation="Horizontal">
+                    <Label Content="Last Traded Price:" />
+                    <TextBlock Text="{Binding Last_Traded_Price, StringFormat={}{0:C}}"
+                               VerticalAlignment="Center" />
 
-        <StackPanel Grid.Row="0"
-                    Orientation="Horizontal">
-            <StackPanel Orientation="Horizontal">
-                <Button Command="{Binding Connect}">Connect</Button>
-                <Button Command="{Binding Disconnect}">Disconnect</Button>
+                    <Label Content=" ▼:" />
+                    <TextBlock Text="{Binding Min, StringFormat={}{0:C}}"
+                               VerticalAlignment="Center"
+                               ToolTip="Min" />
+                    <Label Content=" ▲:" />
+                    <TextBlock Text="{Binding Max, StringFormat={}{0:C}}"
+                               VerticalAlignment="Center"
+                               ToolTip="Max" />
+
+                    <Label Content=" ↧:" />
+                    <TextBox Text="{Binding AlertLess}"
+                             VerticalAlignment="Center"
+                             ToolTip="Lower Limit" />
+                    <Label Content=" ↥:" />
+                    <TextBox Text="{Binding AlertMore}"
+                             VerticalAlignment="Center" ToolTip="Upper Limit"/>
+                    <Label Content=" ↨:" />
+                    <TextBox Text="{Binding Variation}"
+                             VerticalAlignment="Center" ToolTip="Variation" />
+                    
+                    <Label Content=" Lowest Ask:" />
+                    <TextBlock Text="{Binding Lowest_Ask, StringFormat={}{0:C}}"
+                               VerticalAlignment="Center" />
+                    <Label Content=" Highest Bid:" />
+                    <TextBlock Text="{Binding Highest_Bid, StringFormat={}{0:C}}"
+                               VerticalAlignment="Center" />
+                    
+                    <Label Content=" Vol:" />
+                    <TextBlock Text="{Binding Vol}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal"
-                        DataContext="{Binding MarketData}">
-                <Label Content="Last Traded Price:" />
-                <TextBlock Text="{Binding Last_Traded_Price, StringFormat={}{0:C}}"
-                           VerticalAlignment="Center" />
-                <Label Content=" Lowest Ask:" />
-                <TextBlock Text="{Binding Lowest_Ask, StringFormat={}{0:C}}"
-                           VerticalAlignment="Center" />
-                <Label Content=" Highest Bid:" />
-                <TextBlock Text="{Binding Highest_Bid, StringFormat={}{0:C}}"
-                           VerticalAlignment="Center" />
-                <Label Content=" Min:" />
-                <TextBlock Text="{Binding Min, StringFormat={}{0:C}}"
-                           VerticalAlignment="Center" />
-                <Label Content=" Max:" />
-                <TextBlock Text="{Binding Max, StringFormat={}{0:C}}"
-                           VerticalAlignment="Center" />
-                <Label Content=" Vol:" />
-                <TextBlock Text="{Binding Vol}"
-                           VerticalAlignment="Center" />
-                <Label Content=" Less:" />
-                <TextBox Text="{Binding AlertLess}"
-                         VerticalAlignment="Center" />
-                <Label Content=" More:" />
-                <TextBox Text="{Binding AlertMore}"
-                         VerticalAlignment="Center" />
-                <Label Content=" Var:" />
-                <TextBox Text="{Binding Variation}"
-                         VerticalAlignment="Center" />
-            </StackPanel>
-        </StackPanel>
-        <lvc:CartesianChart AnimationsSpeed="0"
-                            Grid.Row="1">
-            <lvc:CartesianChart.Series>
-                <lvc:ScatterSeries Values="{Binding SellChartValues}"
-                                   MinPointShapeDiameter="15"
-                                   MaxPointShapeDiameter="45"
-                                   PointGeometry="{Binding Icon}"
-                                   LabelPoint="{Binding SellLabel}">
-                </lvc:ScatterSeries>
-                <lvc:ScatterSeries Values="{Binding BuyChartValues}"
-                                   MinPointShapeDiameter="15"
-                                   MaxPointShapeDiameter="45"
-                                   PointGeometry="{Binding Icon}"
-                                   LabelPoint="{Binding BuyLabel}">
-                </lvc:ScatterSeries>
-                <lvc:ScatterSeries Values="{Binding TradeChartValues}"
-                                   MinPointShapeDiameter="15"
-                                   MaxPointShapeDiameter="45"
-                                   PointGeometry="{Binding Icon}"
-                                   LabelPoint="{Binding TradeLabel}">
-                </lvc:ScatterSeries>
-            </lvc:CartesianChart.Series>
-            <lvc:CartesianChart.AxisX>
-                <lvc:Axis MaxValue="{Binding AxisMaxX}"
-                          MinValue="{Binding AxisMinX}"></lvc:Axis>
-            </lvc:CartesianChart.AxisX>
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis MaxValue="{Binding AxisMaxY}"
-                          MinValue="{Binding AxisMinY}"></lvc:Axis>
-            </lvc:CartesianChart.AxisY>
-        </lvc:CartesianChart>
+            <lvc:CartesianChart AnimationsSpeed="0"
+                                Grid.Row="1">
+                <lvc:CartesianChart.Series>
+                    <lvc:ScatterSeries Values="{Binding SellChartValues}"
+                                       MinPointShapeDiameter="15"
+                                       MaxPointShapeDiameter="45"
+                                       PointGeometry="{Binding Icon}"
+                                       LabelPoint="{Binding SellLabel}">
+                    </lvc:ScatterSeries>
+                    <lvc:ScatterSeries Values="{Binding BuyChartValues}"
+                                       MinPointShapeDiameter="15"
+                                       MaxPointShapeDiameter="45"
+                                       PointGeometry="{Binding Icon}"
+                                       LabelPoint="{Binding BuyLabel}">
+                    </lvc:ScatterSeries>
+                    <lvc:ScatterSeries Values="{Binding TradeChartValues}"
+                                       MinPointShapeDiameter="15"
+                                       MaxPointShapeDiameter="45"
+                                       PointGeometry="{Binding Icon}"
+                                       LabelPoint="{Binding TradeLabel}">
+                    </lvc:ScatterSeries>
+                </lvc:CartesianChart.Series>
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis MaxValue="{Binding AxisMaxX}"
+                              MinValue="{Binding AxisMinX}"></lvc:Axis>
+                </lvc:CartesianChart.AxisX>
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis MaxValue="{Binding AxisMaxY}"
+                              MinValue="{Binding AxisMinY}"></lvc:Axis>
+                </lvc:CartesianChart.AxisY>
+            </lvc:CartesianChart>
+        </DockPanel>
     </Grid>
 </UserControl>
